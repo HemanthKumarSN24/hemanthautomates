@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Autonomous Support Agent — Live Demo | SN Hemanth</title>
+<style>
+  :root { --bg:#0d1117; --panel:#161b22; --border:#30363d; --text:#e6edf3; --muted:#8b949e;
+          --accent:#58a6ff; --green:#3fb950; --amber:#d29922; --red:#f85149; --purple:#bc8cff; }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:-apple-system,'Segoe UI',sans-serif; background:var(--bg); color:var(--text); padding:24px; max-width:1100px; margin:0 auto; }
+  h1 { font-size:1.5em; margin-bottom:4px; }
+  .sub { color:var(--muted); margin-bottom:18px; font-size:0.95em; }
+  .grid { display:grid; grid-template-columns: 1fr 1.5fr; gap:20px; }
+  @media (max-width:800px){ .grid{grid-template-columns:1fr;} }
+  .card { background:var(--panel); border:1px solid var(--border); border-radius:8px; padding:16px; }
+  label { display:block; font-size:0.85em; color:var(--muted); margin:10px 0 4px; }
+  textarea { width:100%; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:6px; padding:10px; font-size:0.95em; resize:vertical; }
+  button { background:var(--accent); color:#fff; border:none; border-radius:6px; padding:10px 18px; font-size:1em; cursor:pointer; margin-top:12px; font-weight:600; }
+  button:hover { filter:brightness(1.1); }
+  button.ghost { background:var(--border); font-size:0.8em; padding:5px 10px; margin-right:6px; }
+  .thought { font-family:'SF Mono',monospace; font-size:0.8em; line-height:1.55; }
+  .step { padding:8px 10px; border-left:3px solid var(--border); margin-bottom:6px; opacity:0.4; transition:all .3s; }
+  .step.active { opacity:1; border-left-color:var(--accent); background:rgba(88,166,255,.06); }
+  .step.done { opacity:1; border-left-color:var(--green); }
+  .step .tag { color:var(--muted); font-size:0.85em; }
+  .step .reason { color:var(--purple); font-style:italic; }
+  .badge { display:inline-block; padding:2px 8px; border-radius:10px; font-size:0.72em; font-weight:700; margin-left:6px; }
+  .b-red { background:var(--red); } .b-amber { background:var(--amber); color:#000; } .b-green { background:var(--green); color:#000; } .b-blue { background:var(--accent); }
+  .reply { background:var(--bg); border:1px solid var(--green); border-radius:6px; padding:12px; margin-top:12px; font-size:0.9em; line-height:1.5; }
+  .esc { background:rgba(210,153,34,.12); border:1px solid var(--amber); border-radius:6px; padding:10px; margin-top:12px; font-size:0.85em; }
+  .footer { margin-top:24px; color:var(--muted); font-size:0.85em; border-top:1px solid var(--border); padding-top:14px; }
+</style>
+</head>
+<body>
+  <h1>Autonomous Support Agent — Live Demo</h1>
+  <div class="sub">Reasoning → plan → safe tool execution → policy guardrails → human escalation. Built by <b>SN Hemanth</b> · hemanthkumar2k4@gmail.com</div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Customer message arrives</h3>
+      <label>Message</label>
+      <textarea id="msg" rows="6"></textarea>
+      <div style="margin-top:10px;">
+        <button class="ghost" onclick="fill(1)">Angry billing (auto-refund)</button>
+        <button class="ghost" onclick="fill(2)">Legal threat (escalate)</button>
+        <button class="ghost" onclick="fill(3)">Technical question (reply only)</button>
+      </div>
+      <label>Customer tier (context the agent loads first)</label>
+      <select id="tier">
+        <option value="enterprise">Enterprise (goodwill cap £200)</option>
+        <option value="standard">Standard (goodwill cap £50)</option>
+      </select>
+      <button onclick="run()" id="runBtn">Run agent</button>
+      <div id="status" style="margin-top:10px;color:var(--muted);font-size:0.85em;"></div>
+    </div>
+
+    <div class="card">
+      <h3>Agent trace</h3>
+      <div class="thought" id="trace"></div>
+      <div id="output"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <b>The agentic loop this demonstrates:</b> the LLM reasons and outputs a JSON plan (what to do, with why); a separate
+    executor calls the tools safely — the model never touches systems directly; policy caps bound autonomous action
+    (refunds over £200 or legal language always escalate to a human); and the customer gets a concrete, non-corporate reply.
+    Importable n8n workflow accompanies this file.
+    <br><br>SN Hemanth · +44 7424 076984 · hemanthkumar2k4@gmail.com
+  </div>
+
+<script>
+const CASES = {
+  1: { msg: "This is the third time my delivery has been late. My order ORD-8841 was due two weeks ago, my team is blocked, and frankly at £349/month this service is not acceptable. What are you going to do about it?",
+       intent:'complaint', sentiment:'frustrated', conf:0.92,
+       plan: [
+         {step:1, tool:'lookup_order', args:{}, why:'verify the order and its delivery status before promising anything'},
+         {step:2, tool:'check_sla', args:{}, why:'check whether the delivery breached contractual SLA'},
+         {step:3, tool:'issue_refund', args:{amount:150}, why:'SLA breached 31h; enterprise tier allows autonomous goodwill to £200 — act, don\'t ask'},
+         {step:4, tool:'send_reply', args:{}, why:'close the loop with exactly what was done'}
+       ],
+       tools: [
+         {tool:'lookup_order', out:'ORD-8841 · £349 · status: delivered_late · compensation eligible ✓'},
+         {tool:'check_sla', out:'SLA breached by 31h · policy: auto-goodwill up to £200 for enterprise ✓'},
+         {tool:'issue_refund', out:'£150 refunded · ref RF-7k2m9 · within autonomous cap (£200) ✓'},
+         {tool:'send_reply', out:'email sent ✓'}
+       ],
+       reply: "You're right to be annoyed, and I'm not going to make you chase this. I checked ORD-8841: it breached our delivery SLA by 31 hours, so I've processed a £150 goodwill refund — reference RF-7k2m9, it'll show on your next invoice. That's within my authority to do immediately. If the next delivery slips the same way, reply here and it goes straight to a human on our Tier 2 team with this history attached.",
+       escalated: false },
+  2: { msg: "If this isn't resolved by Friday my solicitor will be in touch regarding breach of contract. Sort it out.",
+       intent:'complaint', sentiment:'angry', conf:0.88,
+       plan: [
+         {step:1, tool:'escalate_human', args:{queue:'tier2+legal-flag'}, why:'legal threat detected — policy: never handle autonomously, human must own it now'},
+         {step:2, tool:'send_reply', args:{}, why:'acknowledge receipt and handover only — no commitments'}
+       ],
+       tools: [
+         {tool:'escalate_human', out:'escalated → Tier 2 + legal flag · owner assigned · ETA 4h ✓'},
+         {tool:'send_reply', out:'acknowledgement sent ✓'}
+       ],
+       reply: "I've flagged your message for immediate attention by a senior member of our team — you'll hear from them within four hours. Given what you've raised, I've not taken any unilateral action; the right person will look at the specifics and come back to you directly.",
+       escalated: true },
+  3: { msg: "Quick one — does your API support webhook retries with exponential backoff? We're integrating and I want to make sure we don't lose events on transient failures.",
+       intent:'technical', sentiment:'calm', conf:0.95,
+       plan: [
+         {step:1, tool:'send_reply', args:{}, why:'pure technical question — no systems to touch, answer from product knowledge'}
+       ],
+       tools: [
+         {tool:'send_reply', out:'email sent ✓'}
+       ],
+       reply: "Yes — retries use exponential backoff with jitter, up to 5 attempts over 24 hours. Events are retained for redelivery from the dashboard, so nothing is silently dropped even if all attempts fail. If you're on the enterprise plan you can also set a webhook endpoint for permanent-failure alerts. Anything else on the integration, just reply here.",
+       escalated: false }
+};
+
+function fill(n) {
+  document.getElementById('msg').value = CASES[n].msg;
+  document.getElementById('status').textContent = 'Case loaded — run the agent.';
+}
+
+function run() {
+  const raw = document.getElementById('msg').value.trim();
+  if (!raw) { document.getElementById('status').textContent = 'Load a case or type a message.'; return; }
+  // pick matching case by keyword
+  const c = /solicitor|legal/i.test(raw) ? CASES[2] : (/webhook|api|retry/i.test(raw) ? CASES[3] : CASES[1]);
+  document.getElementById('status').textContent = 'Agent running...';
+  document.getElementById('trace').innerHTML = '';
+  document.getElementById('output').innerHTML = '';
+
+  const trace = document.getElementById('trace');
+  const rows = [];
+  rows.push({tag:'STEP 0 — context', txt: 'Loaded: tier=' + document.getElementById('tier').value + ', openOrders=2, history attached'});
+  rows.push({tag:'STEP 1 — reason', txt: `intent: ${c.intent} · sentiment: ${c.sentiment} · confidence: ${c.conf}`});
+  c.plan.forEach((p, i) => rows.push({tag:`STEP ${p.step+1} — ${p.tool}`, txt: p.why + ' → ' + c.tools[i].out, isAction:true}));
+  rows.push({tag:'STEP N — compose', txt: 'Drafting reply from executed actions only — no promises beyond what was done'});
+
+  const els = [];
+  rows.forEach((r, i) => {
+    const div = document.createElement('div');
+    div.className = 'step';
+    div.innerHTML = `<div><b>${r.tag}</b>${r.isAction?'<span class="badge b-blue">tool</span>':''}</div><div class="${r.isAction?'':'reason'}">${r.txt}</div>`;
+    trace.appendChild(div); els.push(div);
+  });
+
+  let i = 0;
+  const step = () => {
+    if (i > 0) els[i-1].className = 'step done';
+    if (i >= els.length) {
+      document.getElementById('output').innerHTML =
+        `<div class="reply"><b>Agent's reply to customer:</b><br>${c.reply}</div>` +
+        (c.escalated ? `<div class="esc">⚠ Human notified — legal language detected. Agent handled acknowledgement only; a person owns the case.</div>`
+                     : `<div class="esc" style="border-color:var(--green);color:var(--green);">✓ Resolved autonomously. £150 goodwill within the £200 enterprise cap — the agent acts, then tells the human, not the other way round.</div>`);
+      document.getElementById('status').textContent = 'Done — try another case.';
+      return;
+    }
+    els[i].className = 'step active';
+    i++;
+    setTimeout(step, 750);
+  };
+  step();
+}
+</script>
+</body>
+</html>

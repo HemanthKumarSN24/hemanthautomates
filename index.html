@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hemanth Automates — AI Automation Systems That Run While You Sleep</title>
+<meta name="description" content="Hemanth Automates builds agentic AI workflows, supervised automations, and production-grade systems that replace manual business operations. Working demos, shipped not pitched.">
+<link rel="canonical" href="https://hemanthautomates.com/">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--ink:#111;--paper:#f5f5f0;--line:#111;--mut:#666;--acc:#ff4d00}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:'Space Grotesk',sans-serif;line-height:1.5;overflow-x:hidden}
+.mono{font-family:'IBM Plex Mono',monospace}
+nav{display:flex;justify-content:space-between;align-items:center;padding:20px 40px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--paper);z-index:99}
+nav .logo{font-weight:700;font-size:20px;letter-spacing:-1px}
+nav a{color:var(--ink);text-decoration:none;font-size:14px;font-weight:500;margin-left:28px}
+nav a:hover{color:var(--acc)}
+.hero{padding:100px 40px 60px;border-bottom:1px solid var(--line)}
+.hero .label{font-family:'IBM Plex Mono';font-size:11px;text-transform:uppercase;letter-spacing:3px;color:var(--mut);margin-bottom:20px}
+.hero h1{font-size:clamp(3rem,8vw,7.5rem);font-weight:700;line-height:0.95;letter-spacing:-4px;text-transform:uppercase}
+.hero h1 .outline{color:transparent;-webkit-text-stroke:1.5px var(--ink)}
+.hero .sub{margin-top:32px;font-size:clamp(1rem,2vw,1.25rem);max-width:640px;color:var(--mut);line-height:1.7}
+.hero .stats-row{margin-top:60px;display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.hero .stat{background:var(--paper);padding:24px}
+.hero .stat .num{font-size:2.2em;font-weight:700;letter-spacing:-1px}
+.hero .stat .lbl{font-family:'IBM Plex Mono';font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--mut);margin-top:6px}
+section{padding:80px 40px}
+.work-header{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:48px}
+.work-header h2{font-size:clamp(2rem,5vw,4rem);font-weight:700;letter-spacing:-3px;text-transform:uppercase}
+.work-grid{display:grid;grid-template-columns:1fr;gap:1px;background:var(--line);border:1px solid var(--line)}
+.work-item{display:grid;grid-template-columns:80px 1fr auto;gap:24px;align-items:center;background:var(--paper);padding:32px;transition:background .3s;position:relative}
+.work-item:hover{background:#eee}
+.work-item .idx{font-family:'IBM Plex Mono';font-size:13px;color:var(--mut)}
+.work-item h3{font-size:1.6em;font-weight:700;letter-spacing:-1px;margin-bottom:8px}
+.work-item p{color:var(--mut);font-size:14px;max-width:600px;line-height:1.7}
+.work-item .arrow{font-size:24px;transition:transform .3s,color .3s}
+.work-item:hover .arrow{transform:translateX(8px);color:var(--acc)}
+.work-item a{position:absolute;inset:0;z-index:2}
+.tags{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.tag{font-family:'IBM Plex Mono';font-size:10px;text-transform:uppercase;letter-spacing:1px;padding:4px 10px;border:1px solid var(--line);border-radius:20px;color:var(--mut)}
+.svc-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.svc{background:var(--paper);padding:40px}
+.svc .price{font-family:'IBM Plex Mono';font-size:13px;color:var(--acc);margin-bottom:20px;font-weight:600}
+.svc h3{font-size:1.8em;font-weight:700;letter-spacing:-1px;margin-bottom:12px}
+.svc p{color:var(--mut);font-size:14px;line-height:1.7}
+.svc .delivery{font-family:'IBM Plex Mono';font-size:11px;color:var(--mut);margin-top:24px;text-transform:uppercase;letter-spacing:1px}
+.contact{padding:100px 40px;border-top:1px solid var(--line)}
+.contact h2{font-size:clamp(2.5rem,7vw,6rem);font-weight:700;letter-spacing:-4px;text-transform:uppercase;line-height:1}
+.contact h2 .accent{color:var(--acc)}
+.contact form{margin-top:48px;max-width:560px;display:grid;gap:16px}
+.contact input,.contact textarea{width:100%;padding:16px;border:1px solid var(--line);background:var(--paper);font-family:'Space Grotesk';font-size:15px}
+.contact textarea{min-height:120px;resize:vertical}
+.contact button{padding:18px 48px;background:var(--ink);color:var(--paper);font-weight:600;font-size:16px;border:none;cursor:pointer;transition:background .3s;justify-self:start}
+.contact button:hover{background:var(--acc)}
+.contact .direct{margin-top:32px;display:flex;gap:24px;flex-wrap:wrap}
+.contact .direct span{font-family:'IBM Plex Mono';font-size:13px}
+footer{padding:32px 40px;border-top:1px solid var(--line);display:flex;justify-content:space-between;font-family:'IBM Plex Mono';font-size:11px;color:var(--mut);flex-wrap:wrap;gap:12px}
+@media(max-width:768px){nav{padding:16px 20px}nav .links{display:none}.hero,section,.contact{padding:60px 20px}.hero h1{letter-spacing:-2px}.work-item{grid-template-columns:1fr;gap:12px}.work-item .idx{display:none}}
+</style>
+</head>
+<body>
+<nav>
+<div class="logo">HEMANTH—AUTOMATES</div>
+<div class="links"><a href="#work">WORK</a><a href="#services">SERVICES</a><a href="#contact">CONTACT</a></div>
+<div class="mono" style="font-size:11px;color:var(--mut)">hemanthautomates.com</div>
+</nav>
+
+<div class="hero">
+<div class="label">AI AUTOMATION ARCHITECT — ACCEPTING PROJECTS</div>
+<h1><span>SYSTEMS</span><span class="outline">THAT RUN</span><span>WHILE YOU SLEEP.</span></h1>
+<p class="sub">I design and build agentic AI workflows, supervised automation pipelines, and production-grade systems that replace manual business operations. Every project ships with a working demo — not slideware.</p>
+<div class="stats-row">
+<div class="stat"><div class="num">4</div><div class="lbl">Live demo systems</div></div>
+<div class="stat"><div class="num">17.5k</div><div class="lbl">Records processed</div></div>
+<div class="stat"><div class="num">566</div><div class="lbl">Beds automated</div></div>
+<div class="stat"><div class="num">0</div><div class="lbl">Systems down</div></div>
+</div>
+</div>
+
+<section id="work">
+<div class="work-header"><h2>Selected Work</h2><div class="mono" style="font-size:12px;color:var(--mut)">[ 04 SYSTEMS ]</div></div>
+<div class="work-grid">
+<div class="work-item"><div class="idx">001</div><div><h3>Autonomous Support Agent</h3><p>Reasons in steps, outputs JSON plans, executes tools within policy caps, escalates to humans when it should. Three live test cases including a legal-threat escalation.</p><div class="tags"><span class="tag">Agent Reasoning</span><span class="tag">Tool Use</span><span class="tag">Policy Caps</span><span class="tag">Escalation</span></div></div><div class="arrow">→</div><a href="agent-demo.html"></a></div>
+<div class="work-item"><div class="idx">002</div><div><h3>FixFlow — Maintenance Triage</h3><p>566-bed residential operation. Requests classified by urgency and trade, routed automatically, full audit trail. Built end-to-end, shipped.</p><div class="tags"><span class="tag">Live Triage</span><span class="tag">Route Logic</span><span class="tag">Audit Trail</span></div></div><div class="arrow">→</div><a href="fixflow.html"></a></div>
+<div class="work-item"><div class="idx">003</div><div><h3>Azure-Patterned Pipeline</h3><p>GenAI triage pipeline with every component mapped to Azure PaaS — Function, Logic App, Cosmos DB. Confidence gates and structured JSON output.</p><div class="tags"><span class="tag">Azure PaaS</span><span class="tag">Confidence Gates</span><span class="tag">Logic App</span></div></div><div class="arrow">→</div><a href="azure-triage.html"></a></div>
+<div class="work-item"><div class="idx">004</div><div><h3>Supervised Automation — Regulated Ops</h3><p>Document-check agent with approval queue and 21 CFR Part 11-style audit trail. Low-confidence docs never auto-process — the agent knows what it doesn't know.</p><div class="tags"><span class="tag">Approval Queue</span><span class="tag">Audit Trail</span><span class="tag">21 CFR</span></div></div><div class="arrow">→</div><a href="supervised-automation.html"></a></div>
+</div>
+</section>
+
+<section id="services">
+<div class="work-header"><h2>Services</h2><div class="mono" style="font-size:12px;color:var(--mut)">[ 03 OFFERS ]</div></div>
+<div class="svc-grid">
+<div class="svc"><div class="price">$200–300</div><h3>Automation Audit</h3><p>I review your current manual workflows and report exactly where automation pays for itself — with numbers.</p><div class="delivery">DELIVERY: 1 WEEK</div></div>
+<div class="svc"><div class="price">$1,500–6,000</div><h3>Workflow Build</h3><p>End-to-end: intake → AI processing → human approval → system write. Audit trail included.</p><div class="delivery">DELIVERY: 5-DAY SPRINT</div></div>
+<div class="svc"><div class="price">$700–2,000/mo</div><h3>Monthly Retainer</h3><p>Ongoing maintenance, monitoring, and new automation as your operation scales.</p><div class="delivery">DELIVERY: ROLLING MONTHLY</div></div>
+</div>
+</section>
+
+<section class="contact" id="contact">
+<h2>LET'S BUILD<br><span class="accent">YOURS.</span></h2>
+<form action="https://formspree.io/f/hemanthautomates" method="POST">
+<input type="text" name="name" placeholder="Your name" required>
+<input type="email" name="email" placeholder="Your email" required>
+<textarea name="message" placeholder="What do you want to automate?" required></textarea>
+<button type="submit">START A PROJECT</button>
+</form>
+<div class="direct">
+<span>hemanth@hemanthautomates.com</span>
+<span>+44 7424 076984</span>
+<span>github.com/HemanthKumarSN24</span>
+</div>
+</section>
+
+<footer><div>© 2026 HEMANTH AUTOMATES</div><div>BUILT AS A WORKING DEMONSTRATION</div><div>COVENTRY / UK</div></footer>
+</body>
+</html>

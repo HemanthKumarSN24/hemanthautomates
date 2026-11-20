@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FixFlow — Maintenance Triage Demo</title>
+<style>
+  :root{
+    --bg:#0e1116; --panel:#161b22; --panel2:#1c2330; --line:#2a3140;
+    --text:#e6e9ef; --muted:#8b93a3; --accent:#4f8cff; --green:#3fb27f; --amber:#d9a13b; --red:#e05d5d;
+  }
+  *{box-sizing:border-box; margin:0}
+  body{background:var(--bg); color:var(--text); font:14px/1.45 -apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; padding:0}
+  header{display:flex; align-items:center; gap:12px; padding:14px 22px; border-bottom:1px solid var(--line); background:var(--panel)}
+  .logo{width:30px;height:30px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:700}
+  header h1{font-size:16px; font-weight:600}
+  header .tag{color:var(--muted); font-size:12px}
+  header .pill{margin-left:auto; font-size:12px; color:var(--green); border:1px solid var(--green); border-radius:20px; padding:3px 10px}
+  .wrap{display:grid; grid-template-columns: 380px 1fr; height:calc(100vh - 61px)}
+  /* left: inbox */
+  .inbox{border-right:1px solid var(--line); overflow-y:auto; background:var(--panel)}
+  .inbox .bar{padding:12px 16px; font-size:12px; color:var(--muted); border-bottom:1px solid var(--line); display:flex; gap:8px; align-items:center}
+  .bar button{background:var(--accent); border:0; color:#fff; border-radius:6px; padding:5px 12px; font-size:12px; cursor:pointer; margin-left:auto}
+  .bar button.ghost{background:transparent; border:1px solid var(--line); color:var(--muted)}
+  .msg{padding:12px 16px; border-bottom:1px solid var(--line); cursor:pointer}
+  .msg:hover{background:var(--panel2)}
+  .msg.active{background:var(--panel2); border-left:3px solid var(--accent)}
+  .msg .top{display:flex; gap:8px; align-items:center; font-size:13px}
+  .msg .who{font-weight:600}
+  .msg .time{margin-left:auto; color:var(--muted); font-size:11px}
+  .msg .prev{color:var(--muted); font-size:12px; margin-top:3px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .chips{display:flex; gap:6px; margin-top:6px; flex-wrap:wrap}
+  .chip{font-size:11px; padding:2px 8px; border-radius:12px; border:1px solid var(--line); color:var(--muted)}
+  .chip.urgent{background:#3a2020; border-color:var(--red); color:#ff9d9d}
+  .chip.high{background:#3a3220; border-color:var(--amber); color:#ffd48a}
+  .chip.normal{background:#1f2a20; border-color:var(--green); color:#8fe0b4}
+  .chip.sla{background:#3a2020; border-color:var(--red); color:#ff9d9d}
+  .chip.assign{background:#202a3a; border-color:var(--accent); color:#9dc2ff}
+  /* right */
+  .main{overflow-y:auto; padding:20px 24px}
+  .stats{display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px}
+  .stat{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px}
+  .stat .n{font-size:24px; font-weight:700}
+  .stat .l{color:var(--muted); font-size:12px; margin-top:2px}
+  .stat.warn .n{color:var(--amber)} .stat.bad .n{color:var(--red)} .stat.good .n{color:var(--green)}
+  h2{font-size:14px; font-weight:600; margin:18px 0 10px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em}
+  .detail{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:16px}
+  .detail .subj{font-size:16px; font-weight:600; margin-bottom:6px}
+  .detail .meta{color:var(--muted); font-size:12px; margin-bottom:12px}
+  .bubble{background:var(--panel2); border:1px solid var(--line); border-radius:10px 10px 10px 2px; padding:10px 12px; max-width:75%; margin-bottom:8px; font-size:13px}
+  .bubble.ai{border-radius:10px 10px 2px 10px; margin-left:auto; background:#1c2a44; border-color:#2b3f66}
+  .bubble .src{font-size:10px; color:var(--muted); margin-bottom:3px; text-transform:uppercase; letter-spacing:.06em}
+  .row{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap}
+  .btn{background:var(--accent); border:0; color:#fff; border-radius:6px; padding:7px 14px; font-size:13px; cursor:pointer}
+  .btn.ghost{background:transparent; border:1px solid var(--line); color:var(--muted)}
+  table{width:100%; border-collapse:collapse; font-size:13px}
+  th{color:var(--muted); text-align:left; font-weight:500; font-size:11px; text-transform:uppercase; letter-spacing:.05em; padding:8px 10px; border-bottom:1px solid var(--line)}
+  td{padding:9px 10px; border-bottom:1px solid var(--line)}
+  tr.over td:first-child{box-shadow:inset 3px 0 0 var(--red)}
+  .tbadge{font-size:11px; padding:2px 8px; border-radius:10px}
+  .tbadge.urgent{background:#3a2020;color:#ff9d9d} .tbadge.high{background:#3a3220;color:#ffd48a} .tbadge.normal{background:#1f2a20;color:#8fe0b4}
+  .ok{color:var(--green)} .late{color:var(--red)}
+  .note{margin-top:24px; background:var(--panel); border:1px dashed var(--line); border-radius:10px; padding:14px 16px; color:var(--muted); font-size:12.5px; max-width:760px}
+  .note b{color:var(--text)}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">F</div>
+  <h1>FixFlow</h1><span class="tag">Gulson Gardens · maintenance triage</span>
+  <span class="pill">● agent online</span>
+</header>
+<div class="wrap">
+  <div class="inbox">
+    <div class="bar">Resident channel — WhatsApp / email <button id="sim" class="ghost">+ simulate message</button><button id="auto" class="ghost">auto ON</button></div>
+    <div id="list"></div>
+  </div>
+  <div class="main">
+    <div class="stats">
+      <div class="stat"><div class="n" id="s-open">0</div><div class="l">Open requests</div></div>
+      <div class="stat good"><div class="n" id="s-auto">0</div><div class="l">Auto-triaged</div></div>
+      <div class="stat warn"><div class="n" id="s-sla">0</div><div class="l">SLA at risk</div></div>
+      <div class="stat bad"><div class="n" id="s-over">0</div><div class="l">Breached</div></div>
+    </div>
+
+    <h2>Selected request</h2>
+    <div class="detail" id="detail"><div class="subj">Select a request from the inbox</div><div class="meta">The agent has already triaged everything on the left — click any card to see its classification, draft reply and assignment.</div></div>
+
+    <h2>Triage board (agent decisions, staff confirm)</h2>
+    <div class="detail" style="padding:0">
+      <table>
+        <thead><tr><th>Request</th><th>Category</th><th>Priority</th><th>Assigned</th><th>SLA target</th><th>Status</th></tr></thead>
+        <tbody id="board"></tbody>
+      </table>
+    </div>
+
+    <div class="note">
+      <b>What this demo is.</b> Every message on the left arrived from a resident (sample data). On arrival the agent reads it, classifies it, sets a priority and SLA target from the site's rules, drafts the resident reply, and proposes a staff assignment. Staff only see a queue of confirmed decisions — zero requests sit unread, and breaches surface before they happen instead of at month-end.
+      <br><br><b>In production</b> this connects to Fresh's WhatsApp Business number and email, and writes into your job sheet / CRM. The demo runs entirely on sample data in this browser.
+    </div>
+  </div>
+</div>
+<script>
+const staff = ["Duty Manager","Maintenance — plumbing","Maintenance — electrical","Contractor — glazing","Housekeeping"];
+let seq = 0;
+const samples = [
+ {who:"Resident 4B12", text:"Kitchen tap is dripping constantly since last night, water bill will kill me", cat:"Plumbing", pri:"normal", sla:24, msg:"Kitchen tap dripping constantly since last night. Can someone check it this week?"},
+ {who:"Resident 7A02", text:"NO HEATING", cat:"Heating", pri:"urgent", sla:4, msg:"There is no heating in my flat at all, it's freezing. Room 7A02. This is urgent please."},
+ {who:"Resident 2C08", text:"Window cracked", cat:"Glazing", pri:"high", sla:12, msg:"The window in my bedroom has a long crack in it. Worried it might give way, can it be looked at today or tomorrow?"},
+ {who:"Resident 5D01", text:"Bin room smells terrible", cat:"Housekeeping", pri:"normal", sla:24, msg:"The bin room on level 5 smells terrible and bags are stacked outside the bins. Please arrange a clean."},
+ {who:"Resident 1A05", text:"Fridge not cooling", cat:"Appliance", pri:"high", sla:12, msg:"My fridge stopped cooling yesterday, everything is going off. Can it be fixed or replaced soon?"},
+];
+function rel(t){const s=Math.floor((Date.now()-t)/1000); if(s<60)return s+"s ago"; if(s<3600)return Math.floor(s/60)+"m ago"; return Math.floor(s/3600)+"h ago";}
+const replies = {
+ urgent:"Sorry about this — I've flagged it as an emergency and the duty manager has been notified. Someone will come to you within the next few hours.",
+ high:"Thanks for reporting this. It's logged as a priority job and assigned to maintenance; you'll get an update within 12 hours.",
+ normal:"Thanks for letting us know. This has been logged for the maintenance team and is scheduled within 24 hours."
+};
+let tickets = [];
+samples.forEach(s=>{
+  tickets.push({...s, id:"FF-"+String(++seq).padStart(3,"0"), t:Date.now()-Math.random()*36*3600*1000, status:"Auto-triaged", assigned:null});
+});
+// pre-age a couple to show SLA states
+tickets[0].t = Date.now()-30*3600*1000; tickets[0].status="BREACHED";
+tickets[3].t = Date.now()-20*3600*1000; tickets[3].status="SLA at risk";
+let auto = true, sel = null;
+const el = id=>document.getElementById(id);
+function render(){
+  const list = el("list"); list.innerHTML="";
+  const order = [...tickets].sort((a,b)=>({urgent:0,high:1,normal:2}[a.pri]-{urgent:0,high:1,normal:2}[b.pri]));
+  order.forEach(t=>{
+    const hrs = (Date.now()-t.t)/36e5;
+    const breached = hrs > t.sla; const risk = !breached && hrs > t.sla*0.6;
+    const d = document.createElement("div"); d.className="msg"+(sel===t.id?" active":"");
+    d.innerHTML = `<div class="top"><span class="who">${t.who}</span><span class="time">${rel(t.t)}</span></div>
+      <div class="prev">${t.msg}</div>
+      <div class="chips"><span class="chip ${t.pri}">${t.pri.toUpperCase()}</span><span class="chip">SLA ${t.sla}h</span>
+      ${breached?`<span class="chip sla">BREACHED</span>`:risk?`<span class="chip sla">AT RISK</span>`:""}
+      ${t.assigned?`<span class="chip assign">${t.assigned}</span>`:""}</div>`;
+    d.onclick=()=>{sel=t.id; render();};
+    list.appendChild(d);
+  });
+  el("s-open").textContent = tickets.length;
+  el("s-auto").textContent = tickets.filter(t=>t.status==="Auto-triaged").length;
+  el("s-sla").textContent = tickets.filter(t=>t.status==="SLA at risk").length;
+  el("s-over").textContent = tickets.filter(t=>t.status==="BREACHED").length;
+  const b = el("board"); b.innerHTML="";
+  order.forEach(t=>{
+    const hrs=(Date.now()-t.t)/36e5, breached=hrs>t.sla, risk=!breached&&hrs>t.sla*0.6;
+    const tr=document.createElement("tr"); if(breached)tr.className="over";
+    tr.innerHTML=`<td>${t.id} · ${t.who}</td><td>${t.cat}</td><td><span class="tbadge ${t.pri}">${t.pri}</span></td>
+      <td>${t.assigned||'<span style="color:var(--muted)">proposed: '+staff[Math.floor(Math.random()*staff.length)]+'</span>'}</td>
+      <td>${t.sla}h</td><td class="${breached?'late':risk?'':'ok'}">${breached?"Breached":risk?"At risk":"On track"}</td>`;
+    b.appendChild(tr);
+  });
+  const t = tickets.find(x=>x.id===sel);
+  if(t){
+    el("detail").innerHTML = `<div class="subj">${t.id} — ${t.cat} · ${t.pri.toUpperCase()} · SLA ${t.sla}h</div>
+      <div class="meta">${t.who} · ${rel(t.t)} · ${t.status}</div>
+      <div class="bubble"><div class="src">resident · WhatsApp</div>${t.msg}</div>
+      <div class="bubble ai"><div class="src">fixflow agent · auto-draft</div>${replies[t.pri]}</div>
+      <div class="row">
+        <button class="btn" onclick="assign('${t.id}')">Assign: ${staff[Math.floor(Math.random()*staff.length)]}</button>
+        <button class="btn ghost" onclick="escalate('${t.id}')">Escalate to duty manager</button>
+        <button class="btn ghost" onclick="resolve('${t.id}')">Mark resolved</button>
+      </div>`;
+  }
+}
+window.assign = id=>{const t=tickets.find(x=>x.id===id); t.assigned=staff[Math.floor(Math.random()*staff.length)]; t.status="Assigned"; render();};
+window.escalate = id=>{const t=tickets.find(x=>x.id===id); t.assigned="Duty Manager"; t.status="Escalated"; render();};
+window.resolve = id=>{const t=tickets.find(x=>x.id===id); t.status="Resolved"; render();};
+el("sim").onclick=()=>{
+  const s = samples[Math.floor(Math.random()*samples.length)];
+  const t = {id:"FF-"+String(++seq).padStart(3,"0"), t:Date.now(), status:"Auto-triaged", assigned:null, ...s};
+  tickets.unshift(t); sel=t.id;
+  if(auto) setTimeout(()=>render(), 900); // simulate agent thinking
+  render();
+};
+el("auto").onclick=e=>{auto=!auto; e.target.textContent="auto "+(auto?"ON":"OFF");};
+setInterval(render, 30000);
+render();
+</script>
+</body>
+</html>
